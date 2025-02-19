@@ -3,7 +3,14 @@
 // for sensors
 int edgeLeftOuter, edgeLeftInner;
 int edgeRightOuter, edgeRightInner;
+int edgeFront;
 int threshold;
+
+// for wall finding
+bool foundLWall, foundRWall, foundFront;
+int wallFindType = 0;
+int turnCount = 0;
+bool foundWall, foundDeadEnd;
 
 // for calibrating
 bool foundLeftWall = false, calibrated = false, rightWall = false;
@@ -22,23 +29,48 @@ void loop() {
 
   readSensors();
 
-  calibrateSparki();
-
-  //sparki.moveForward();
-
-  sparki.clearLCD();
-  sparki.print("Left: ");
-  sparki.println(edgeLeftOuter);
-  sparki.print("Right: ");
-  sparki.println(edgeRightOuter);
-  sparki.updateLCD();
+  if (!calibrated) {
+    calibrateSparki();
+  } else {
+    if (foundDeadEnd && wallFindType == 0) {
+      sparki.moveRight(90);
+      sparki.moveForward();
+    } else if (foundLWall) {
+      wallFindType = 0;
+      sparki.moveForward();
+      sparki.println("Found wall.");
+    } else if (!foundLWall && wallFindType == 0) {
+      sparki.moveStop();
+      sparki.println("Didn't find wall.");
+      sparki.updateLCD();
+      wallFindType = 1; // enter wall finding routine
+      sparki.moveForward(0.5);
+    }
+    
+    if (wallFindType > 0) {
+      wallFind();
+    }
+    
+    sparki.updateLCD();
+  }
 }
 
 void readSensors() {
   edgeLeftOuter = sparki.edgeLeft();
   edgeLeftInner = sparki.lineLeft();
+  foundLWall = edgeLeftOuter < threshold;
+  
   edgeRightOuter = sparki.edgeRight();
   edgeRightInner = sparki.lineRight();
+  foundRWall = edgeRightOuter < threshold;
+
+  edgeFront = sparki.lineCenter();
+  foundFront = edgeFront < threshold;
+
+  if (foundLWall && foundFront) {
+    foundLWall = false;
+    foundDeadEnd = true;
+  }
 }
 
 void calibrateSparki() {
@@ -68,5 +100,55 @@ void calibrateSparki() {
       sparki.motorStop(MOTOR_RIGHT);
       calibrated = true;
     }
+  }
+}
+
+void wallFind() {
+  switch (wallFindType) {
+    
+    case 1: // off track, search around 5 degrees
+      sparki.println("Searching right");
+      while (!foundLWall && turnCount++ < 5) {
+        sparki.moveRight();
+        readSensors();
+      }
+      if (turnCount >= 5) { // couldn't find wall
+        sparki.moveLeft(5); // turn back to original position
+        sparki.println("Done searching right");
+      } else { // found wall
+        wallFindType = 0;
+        turnCount = 0;
+        return;
+      }
+      turnCount = 0;
+
+      sparki.println("Searching left");
+      while (!foundLWall && turnCount++ < 5) {
+        sparki.moveLeft();
+        readSensors();
+      }
+      if (turnCount >= 5) { // couldn't find wall
+        sparki.moveRight(5); // turn back to original position
+        wallFindType = 2; // move on to next wall finding type
+        sparki.println("Done searching left");
+      } else { // found a wall
+        sparki.println(turnCount);
+        wallFindType = 0;
+        turnCount = 0;
+        return;
+      }
+      turnCount = 0;
+      break;
+      
+    case 2: // check for 90 degree turn
+      sparki.moveForward(7);
+      sparki.moveLeft(90);
+      sparki.moveStop();
+      sparki.println("Search level 2");
+      wallFindType = 0;
+      break;
+      
+    default: // idk what happened
+      break;
   }
 }
