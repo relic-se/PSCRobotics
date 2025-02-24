@@ -22,6 +22,11 @@ void setup() {
   while (!Serial && serialDelay--) {
     delay(1);
   }
+
+  // Startup beep
+  sparki.beep(440, 300); // A4, 0.3s
+  delay(300);
+  sparki.beep(880, 500); // A5, 0.5s
 }
 
 void loop() {
@@ -39,6 +44,10 @@ void loop() {
       wallFindType = 0;
       sparki.moveForward();
       sparki.println("Found wall.");
+    } else if (!foundLWall && !foundRWall && !foundFront) {
+      sparki.moveStop();
+      sparki.println("Exited maze.");
+      finish();
     } else if (!foundLWall && wallFindType == 0) {
       sparki.moveStop();
       sparki.println("Didn't find wall.");
@@ -151,4 +160,29 @@ void wallFind() {
     default: // idk what happened
       break;
   }
+}
+
+void finish() {
+  sparki.moveStop();
+  delay(500);
+
+  // melody
+  sparki.beep(523, 300); // C5
+  delay(300);
+  sparki.beep(659, 300); // E5
+  delay(300);
+  sparki.beep(784, 500); // G5
+
+  // 360 spin
+  sparki.moveRight(360);
+  delay(2000);
+
+  // Wait
+  // TODO: Detect remote
+  while (true) {
+    sparki.moveStop();
+    delay(1000);
+  }
+
+  // TODO: Reset state
 }
