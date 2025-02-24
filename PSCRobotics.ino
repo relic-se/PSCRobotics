@@ -22,6 +22,11 @@ void setup() {
   while (!Serial && serialDelay--) {
     delay(1);
   }
+
+  // Startup beep
+  sparki.beep(440, 300); // A4, 0.3s
+  delay(300);
+  sparki.beep(880, 500); // A5, 0.5s
 }
 
 void loop() {
