@@ -16,13 +16,6 @@ bool foundWall, foundDeadEnd;
 bool foundLeftWall = false, calibrated = false, rightWall = false;
 
 void setup() {
-  // Begin serial and wait up to 2 seconds for connection
-  Serial.begin(9600);
-  int serialDelay = 2000;
-  while (!Serial && serialDelay--) {
-    delay(1);
-  }
-
   // Startup beep
   sparki.beep(440, 300); // A4, 0.3s
   delay(300);
