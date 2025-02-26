@@ -3,6 +3,8 @@
 
 WallFinder wallFinder;
 
+bool paused = false;
+
 void setup() {
   // Startup beep
   sparki.beep(440, 300); // A4, 0.3s
@@ -11,6 +13,14 @@ void setup() {
 }
 
 void loop() {
+  remote();
+
+  if (paused) {
+    sparki.RGB(RGB_RED);
+    return;
+  }
+  sparki.RGB(RGB_GREEN);
+
   wallFinder.update();
   wallFinder.debug();
 
@@ -21,6 +31,8 @@ void loop() {
 }
 
 void finish() {
+  sparki.RGB(RGB_BLUE);
+
   sparki.moveStop();
   delay(500);
 
@@ -36,39 +48,45 @@ void finish() {
   delay(2000);
 
   // Wait
-  // TODO: Detect remote
-  while (true) {
+  while (sparki.readIR() != 69) { // rotate left
     sparki.moveStop();
     delay(1000);
   }
-Void remote(){
 
-// /------^-----
-// |            |
-// | 69  70  71 |
-// | 68  64  67 |
-// |  7  21   9 |
-// | 22  25  13 |
-// | 12  24  94 |
-// |  8  28  90 |
-// | 66  82  74 |
-// ____________/
+  // Reset
+  wallFinder.reset();
+}
+
+void remote() {
+
+  // /------^-----\
+  // |            |
+  // | 69  70  71 |
+  // | 68  64  67 |
+  // |  7  21   9 |
+  // | 22  25  13 |
+  // | 12  24  94 |
+  // |  8  28  90 |
+  // | 66  82  74 |
+  // \____________/
 
 
-{int code = sparki.readIR();
+  int code = sparki.readIR();
+  if (code < 0) return;
  
-  if(code != -1){
-    sparki.print("Received code: ");
-    sparki.println(code);
-  }
+  sparki.print("Received code: ");
+  sparki.println(code);
 
-  switch (code){
+  switch (code) {
 
-   // case 12: calibrateSparki();break;
-    case 64: sparki.moveStop();break; //square button;
-    case 24: sparki.clear();break
+    case 12: // 1
+      wallFinder.reset();
+      break;
+
+    case 64: // square button
+      sparki.moveStop();
+      paused = !paused;
+      break;
     
   }
-}
-  // TODO: Reset state
 }
