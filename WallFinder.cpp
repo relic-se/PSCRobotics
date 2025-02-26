@@ -81,10 +81,10 @@ void WallFinder::debug() {
   // Sensors
   sparki.print("L: ");
   sparki.print(getBoolName(_found_left));
-  sparki.print(" R: ");
-  sparki.print(getBoolName(_found_right));
   sparki.print(" F: ");
-  sparki.println(getBoolName(_found_front));
+  sparki.print(getBoolName(_found_front));
+  sparki.print(" R: ");
+  sparki.println(getBoolName(_found_right));
 
   sparki.print("D: ");
   sparki.println(getBoolName(_found_dead_end));
@@ -96,6 +96,8 @@ void WallFinder::debug() {
   sparki.print(getBoolName(_calibrate_left));
   sparki.print(" CR: ");
   sparki.println(getBoolName(_calibrate_right));
+
+  sparki.updateLCD();
 };
 
 const char *WallFinder::getStateName() {
