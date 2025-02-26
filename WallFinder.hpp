@@ -27,9 +27,8 @@ public:
   
   WallFinderState getState();
   bool isState(WallFinderState state);
-  
-protected:
   void reset();
+protected:
 
   const char *getStateName();
   const char *getBoolName(bool value);
