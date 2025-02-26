@@ -4,11 +4,13 @@
 #include <Sparki.h>
 
 #define SENSOR_THRESHOLD 700
-#define FIND_TURN_COUNT 5
+#define FIND_TURN_DEGREES 15
 #define FINISH_TIME 2000
 
 enum class WallFinderState {
   CALIBRATE,
+  CALIBRATE_LEFT,
+  CALIBRATE_RIGHT,
   MOVE,
   FIND,
   CHECK_FINISH,
@@ -35,18 +37,19 @@ protected:
   bool checkSensor(int value);
   void read();
 
-  bool calibrate(bool blocking = false);
-  WallFinderState move();
+  bool calibrate();
+  void move();
   void find();
   bool findWall(int dir = DIR_CW);
   void checkFinish();
 
-  bool setState(WallFinderState state);
+  bool setState(WallFinderState state, bool reset = true);
 
 private:
   // State
   WallFinderState _state;
-  int _timer;
+  unsigned long _timer;
+  unsigned long _millis;
 
   // Sensors
   int _sensor_left_outer, _sensor_left_inner;
