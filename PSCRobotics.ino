@@ -41,6 +41,34 @@ void finish() {
     sparki.moveStop();
     delay(1000);
   }
+Void remote(){
 
+// /------^-----
+// |            |
+// | 69  70  71 |
+// | 68  64  67 |
+// |  7  21   9 |
+// | 22  25  13 |
+// | 12  24  94 |
+// |  8  28  90 |
+// | 66  82  74 |
+// ____________/
+
+
+{int code = sparki.readIR();
+ 
+  if(code != -1){
+    sparki.print("Received code: ");
+    sparki.println(code);
+  }
+
+  switch (code){
+
+   // case 12: calibrateSparki();break;
+    case 64: sparki.moveStop();break; //square button;
+    case 24: sparki.clear();break
+    
+  }
+}
   // TODO: Reset state
 }
