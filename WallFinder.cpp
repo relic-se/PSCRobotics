@@ -5,9 +5,7 @@ WallFinder::WallFinder() {
 };
 
 void WallFinder::reset() {
-  _state = WallFinderState::CALIBRATE;
-  _calibrated = false;
-  _calibrate_left = _calibrate_right = false;
+  setState(WallFinderState::CALIBRATE);
 };
 
 void WallFinder::update() {
@@ -17,19 +15,23 @@ void WallFinder::update() {
   switch (_state) {
     case WallFinderState::CALIBRATE:
       if (calibrate()) {
-        _state = WallFinderState::MOVE;
+        setState(WallFinderState::MOVE);
       }
       break;
 
     case WallFinderState::MOVE:
-      _state = move();
+      setState(move());
       break;
 
     case WallFinderState::FIND:
       find();
 
       // Always go back to move state after wall find
-      _state = WallFinderState::MOVE;
+      setState(WallFinderState::MOVE);
+      break;
+
+    case WallFinderState::CHECK_FINISH:
+      checkFinish();
       break;
   }
 };
@@ -58,10 +60,13 @@ void WallFinder::read() {
   _sensor_front = sparki.lineCenter();
   _found_front = checkSensor(_sensor_front);
 
+  /*
   if (_found_left && _found_front) {
     _found_left = false;
     _found_dead_end = true;
   }
+  */
+  _found_dead_end = false;
 
   /* // NOTE: Not necessary if following left wall
   if (_found_right && _found_front) {
@@ -108,6 +113,8 @@ const char *WallFinder::getStateName() {
       return "Move";
     case WallFinderState::FIND:
       return "Find Wall";
+    case WallFinderState::CHECK_FINISH:
+      return "Checking Finish";
     case WallFinderState::FINISH:
       return "Finish";
   }
@@ -166,9 +173,9 @@ WallFinderState WallFinder::move() {
     sparki.moveForward();
   } else if (_found_left) { // Continue moving
     sparki.moveForward();
-  } else if (!_found_left && !_found_right && !_found_front) { // All sensors off, finished
+  } else if (!_found_left && !_found_right && !_found_front && _timer++ > FINISH_TIME) { // All sensors off, finished
     sparki.moveStop();
-    state = WallFinderState::FINISH;
+    setState(WallFinderState::CHECK_FINISH);
   } else if (!_found_left) { // Off of wall
     sparki.moveStop();
     state = WallFinderState::FIND;
@@ -210,4 +217,38 @@ bool WallFinder::findWall(int dir) {
   }
   
   return _found_left;
+};
+
+void WallFinder::checkFinish() {
+  sparki.moveForward();
+  delay(1);
+  if (_found_left || _found_right || _found_front) {
+    setState(WallFinderState::MOVE);
+  } else if (_timer++ >= FINISH_TIME) {
+    sparki.moveStop();
+    setState(WallFinderState::FINISH);
+  }
+};
+
+bool WallFinder::setState(WallFinderState state) {
+  if (isState(state)) return false;
+  
+  switch (state) {
+    case WallFinderState::CALIBRATE:
+      _calibrated = false;
+      _calibrate_left = _calibrate_right = false;
+      break;
+    case WallFinderState::FINISH:
+      if (!isState(WallFinderState::CHECK_FINISH)) {
+        state = WallFinderState::CHECK_FINISH;
+      } else if (_timer++ < FINISH_TIME) {
+        return false;
+      }
+      break;
+  }
+
+  _state = state;
+  _timer = 0;
+
+  return true;
 };

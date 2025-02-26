@@ -5,11 +5,13 @@
 
 #define SENSOR_THRESHOLD 700
 #define FIND_TURN_COUNT 5
+#define FINISH_TIME 2000
 
 enum class WallFinderState {
   CALIBRATE,
   MOVE,
   FIND,
+  CHECK_FINISH,
   FINISH
 };
 
@@ -17,8 +19,10 @@ class WallFinder
 {
 public:
   WallFinder();
+  
   void update();
   void debug();
+  
   WallFinderState getState();
   bool isState(WallFinderState state);
   
@@ -35,10 +39,14 @@ protected:
   WallFinderState move();
   void find();
   bool findWall(int dir = DIR_CW);
+  void checkFinish();
+
+  bool setState(WallFinderState state);
 
 private:
   // State
   WallFinderState _state;
+  int _timer;
 
   // Sensors
   int _sensor_left_outer, _sensor_left_inner;
