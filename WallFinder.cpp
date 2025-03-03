@@ -78,8 +78,6 @@ void WallFinder::read() {
 };
 
 void WallFinder::debug() {
-  sparki.clearLCD();
-
   // State
   sparki.print("State: ");
   sparki.println(getStateName());
@@ -93,13 +91,11 @@ void WallFinder::debug() {
   sparki.println(getBoolName(_found_right));
 
   sparki.print("D: ");
-  sparki.println(getBoolName(_found_dead_end));
+  sparki.print(getBoolName(_found_dead_end));
 
   // Calibration
-  sparki.print("C: ");
+  sparki.print(" C: ");
   sparki.println(getBoolName(_calibrated));
-
-  sparki.updateLCD();
 };
 
 const char *WallFinder::getStateName() {

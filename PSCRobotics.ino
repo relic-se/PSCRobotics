@@ -22,7 +22,11 @@ void loop() {
   sparki.RGB(RGB_GREEN);
 
   wallFinder.update();
+
+  // Debugging
+  sparki.clearLCD();
   wallFinder.debug();
+  sparki.updateLCD();
 
   // Handle finish state
   if (wallFinder.isState(WallFinderState::FINISH)) {
