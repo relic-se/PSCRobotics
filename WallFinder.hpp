@@ -63,7 +63,6 @@ private:
   bool _found_wall, _found_dead_end;
 
   // Calibration
-  bool _calibrate_left, _calibrate_right;
   bool _calibrated;
 
 };

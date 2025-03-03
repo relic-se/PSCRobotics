@@ -97,11 +97,7 @@ void WallFinder::debug() {
 
   // Calibration
   sparki.print("C: ");
-  sparki.print(getBoolName(_calibrated));
-  sparki.print(" CL: ");
-  sparki.print(getBoolName(_calibrate_left));
-  sparki.print(" CR: ");
-  sparki.println(getBoolName(_calibrate_right));
+  sparki.println(getBoolName(_calibrated));
 
   sparki.updateLCD();
 };
@@ -133,40 +129,10 @@ const char *WallFinder::getBoolName(bool value) {
 bool WallFinder::calibrate() {
   if (_calibrated) return false;
 
-  _calibrate_right = false;
-
-  // Move a little and check if we've hit the left wall yet
-  if (!_calibrate_left && !_calibrated) {
-    setState(WallFinderState::CALIBRATE_LEFT, false);
-    sparki.moveLeft(1);
-    _calibrate_left = _found_left;
-  }
-
-  if (_calibrate_left && !_calibrated) {
-    _calibrated = true;
-    /*
-    if (!_calibrate_right) {
-      setState(WallFinderState::CALIBRATE_RIGHT, false);
-      sparki.motorRotate(MOTOR_LEFT, DIR_CCW, 15);
-      sparki.motorRotate(MOTOR_RIGHT, DIR_CW, 55);
-    }
-
-    if (_found_left && _found_right) {
-      // Sparki is -30 degrees from wall when both sensors are active
-      _calibrate_right = true;
-
-      // Re-orient sparki
-      sparki.moveForward();
-      delay(1000);
-      sparki.moveRight(24);
-      sparki.moveBackward();
-      delay(1000);
-      sparki.moveStop();
-
-      _calibrated = true;
-    }
-    */
-  }
+  // Move a little and check if we've hit the left wall
+  sparki.moveLeft(1);
+  read(); // NOTE: This read call may be unnecessary
+  _calibrated = _found_left;
 
   return _calibrated;
 };
@@ -234,7 +200,6 @@ bool WallFinder::setState(WallFinderState state, bool reset) {
   switch (state) {
     case WallFinderState::CALIBRATE:
       _calibrated = false;
-      _calibrate_left = _calibrate_right = false;
       break;
     case WallFinderState::FINISH:
       if (!isState(WallFinderState::CHECK_FINISH)) {
