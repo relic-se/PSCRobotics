@@ -106,10 +106,6 @@ const char *WallFinder::getStateName() {
   switch (_state) {
     case WallFinderState::CALIBRATE:
       return "Calibrate";
-    case WallFinderState::CALIBRATE_LEFT:
-      return "Calibrate Left";
-    case WallFinderState::CALIBRATE_RIGHT:
-      return "Calibrate Right";
     case WallFinderState::MOVE:
       return "Move";
     case WallFinderState::FIND:

@@ -9,8 +9,6 @@
 
 enum class WallFinderState {
   CALIBRATE,
-  CALIBRATE_LEFT,
-  CALIBRATE_RIGHT,
   MOVE,
   FIND,
   CHECK_FINISH,
@@ -28,8 +26,8 @@ public:
   WallFinderState getState();
   bool isState(WallFinderState state);
   void reset();
+  
 protected:
-
   const char *getStateName();
   const char *getBoolName(bool value);
 
