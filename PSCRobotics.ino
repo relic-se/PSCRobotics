@@ -1,19 +1,9 @@
 #include <Sparki.h>
+#include "WallFinder.hpp"
 
-// for sensors
-int edgeLeftOuter, edgeLeftInner;
-int edgeRightOuter, edgeRightInner;
-int edgeFront;
-int threshold;
+WallFinder wallFinder;
 
-// for wall finding
-bool foundLWall, foundRWall, foundFront;
-int wallFindType = 0;
-int turnCount = 0;
-bool foundWall, foundDeadEnd;
-
-// for calibrating
-bool foundLeftWall = false, calibrated = false, rightWall = false;
+bool paused = false;
 
 void setup() {
   // Startup beep
@@ -23,139 +13,26 @@ void setup() {
 }
 
 void loop() {
-  threshold = 700;
+  remote();
 
-  readSensors();
-
-  if (!calibrated) {
-    calibrateSparki();
-  } else {
-    if (foundDeadEnd && wallFindType == 0) {
-      sparki.moveRight(90);
-      sparki.moveForward();
-    } else if (foundLWall) {
-      wallFindType = 0;
-      sparki.moveForward();
-      sparki.println("Found wall.");
-    } else if (!foundLWall && !foundRWall && !foundFront) {
-      sparki.moveStop();
-      sparki.println("Exited maze.");
-      finish();
-    } else if (!foundLWall && wallFindType == 0) {
-      sparki.moveStop();
-      sparki.println("Didn't find wall.");
-      sparki.updateLCD();
-      wallFindType = 1; // enter wall finding routine
-      sparki.moveForward(0.5);
-    }
-    
-    if (wallFindType > 0) {
-      wallFind();
-    }
-    
-    sparki.updateLCD();
+  if (paused) {
+    sparki.RGB(RGB_RED);
+    return;
   }
-}
+  sparki.RGB(RGB_GREEN);
 
-void readSensors() {
-  edgeLeftOuter = sparki.edgeLeft();
-  edgeLeftInner = sparki.lineLeft();
-  foundLWall = edgeLeftOuter < threshold;
-  
-  edgeRightOuter = sparki.edgeRight();
-  edgeRightInner = sparki.lineRight();
-  foundRWall = edgeRightOuter < threshold;
+  wallFinder.update();
+  wallFinder.debug();
 
-  edgeFront = sparki.lineCenter();
-  foundFront = edgeFront < threshold;
-
-  if (foundLWall && foundFront) {
-    foundLWall = false;
-    foundDeadEnd = true;
-  }
-}
-
-void calibrateSparki() {
-  rightWall = false;
-
-  if (!foundLeftWall && !calibrated) {
-    sparki.moveLeft(1);
-    if (edgeLeftOuter < threshold) {
-      foundLeftWall = true;
-    }
-  }
-
-  if (foundLeftWall && !calibrated) {
-    if (!rightWall) {
-      sparki.motorRotate(MOTOR_LEFT, DIR_CCW, 15);
-      sparki.motorRotate(MOTOR_RIGHT, DIR_CW, 55);
-    }
-
-    if (edgeLeftOuter < threshold && edgeRightOuter < threshold) {
-      rightWall = true;
-      sparki.moveForward();
-      delay(1000);
-      sparki.moveRight(24);
-      sparki.moveBackward();
-      delay(1000);
-      sparki.motorStop(MOTOR_LEFT);
-      sparki.motorStop(MOTOR_RIGHT);
-      calibrated = true;
-    }
-  }
-}
-
-void wallFind() {
-  switch (wallFindType) {
-    
-    case 1: // off track, search around 5 degrees
-      sparki.println("Searching right");
-      while (!foundLWall && turnCount++ < 5) {
-        sparki.moveRight();
-        readSensors();
-      }
-      if (turnCount >= 5) { // couldn't find wall
-        sparki.moveLeft(5); // turn back to original position
-        sparki.println("Done searching right");
-      } else { // found wall
-        wallFindType = 0;
-        turnCount = 0;
-        return;
-      }
-      turnCount = 0;
-
-      sparki.println("Searching left");
-      while (!foundLWall && turnCount++ < 5) {
-        sparki.moveLeft();
-        readSensors();
-      }
-      if (turnCount >= 5) { // couldn't find wall
-        sparki.moveRight(5); // turn back to original position
-        wallFindType = 2; // move on to next wall finding type
-        sparki.println("Done searching left");
-      } else { // found a wall
-        sparki.println(turnCount);
-        wallFindType = 0;
-        turnCount = 0;
-        return;
-      }
-      turnCount = 0;
-      break;
-      
-    case 2: // check for 90 degree turn
-      sparki.moveForward(7);
-      sparki.moveLeft(90);
-      sparki.moveStop();
-      sparki.println("Search level 2");
-      wallFindType = 0;
-      break;
-      
-    default: // idk what happened
-      break;
+  // Handle finish state
+  if (wallFinder.isState(WallFinderState::FINISH)) {
+    finish();
   }
 }
 
 void finish() {
+  sparki.RGB(RGB_BLUE);
+
   sparki.moveStop();
   delay(500);
 
@@ -171,11 +48,45 @@ void finish() {
   delay(2000);
 
   // Wait
-  // TODO: Detect remote
-  while (true) {
+  while (sparki.readIR() != 69) { // rotate left
     sparki.moveStop();
     delay(1000);
   }
 
-  // TODO: Reset state
+  // Reset
+  wallFinder.reset();
+}
+
+void remote() {
+
+  // /------^-----\
+  // |            |
+  // | 69  70  71 |
+  // | 68  64  67 |
+  // |  7  21   9 |
+  // | 22  25  13 |
+  // | 12  24  94 |
+  // |  8  28  90 |
+  // | 66  82  74 |
+  // \____________/
+
+
+  int code = sparki.readIR();
+  if (code < 0) return;
+ 
+  sparki.print("Received code: ");
+  sparki.println(code);
+
+  switch (code) {
+
+    case 12: // 1
+      wallFinder.reset();
+      break;
+
+    case 64: // square button
+      sparki.moveStop();
+      paused = !paused;
+      break;
+    
+  }
 }
