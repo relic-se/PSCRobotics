@@ -19,8 +19,6 @@ void WallFinder::update() {
 
   switch (_state) {
     case WallFinderState::CALIBRATE:
-    case WallFinderState::CALIBRATE_LEFT:
-    case WallFinderState::CALIBRATE_RIGHT:
       if (calibrate()) {
         setState(WallFinderState::MOVE);
       }
@@ -34,9 +32,19 @@ void WallFinder::update() {
       find();
       break;
 
+    case WallFinderState::TURN_LEFT:
+    case WallFinderState::TURN_RIGHT:
+      turn();
+      break;
+
     case WallFinderState::CHECK_FINISH:
       checkFinish();
       break;
+  }
+
+  // Update ticks
+  if (_ticks > 0) {
+    _ticks--;
   }
 };
 
@@ -106,6 +114,10 @@ const char *WallFinder::getStateName() {
       return "Move";
     case WallFinderState::FIND:
       return "Find Wall";
+    case WallFinderState::TURN_LEFT:
+      return "Turning Left";
+    case WallFinderState::TURN_RIGHT:
+      return "Turning Right";
     case WallFinderState::CHECK_FINISH:
       return "Checking Finish";
     case WallFinderState::FINISH:
@@ -133,7 +145,7 @@ void WallFinder::move() {
   sparki.moveForward();
   if (_found_dead_end) {
     // Right turn
-    sparki.moveRight(90);
+    setState(WallFinderState::TURN_RIGHT);
   //} else if (!_found_left && !_found_right && !_found_front) { // All sensors off, finished
   //  setState(WallFinderState::CHECK_FINISH);
   } else if (!_found_left) { // Off of wall
@@ -144,14 +156,13 @@ void WallFinder::move() {
 
 void WallFinder::find() {
   // Search right then left
-  if (!findWall(DIR_CW) && !findWall(DIR_CCW)) {
-    // Take 90 degree left turn
-    sparki.moveForward(7);
-    sparki.moveLeft(90);
+  if (findWall(DIR_CW) || findWall(DIR_CCW)) {
+    // If we find the wall, go back to move state
+    setState(WallFinderState::MOVE);
   }
 
-  // Always go back to move state after wall find
-  setState(WallFinderState::MOVE);
+  // If we can't find the wall, take a left turn
+  setState(WallFinderState::TURN_LEFT);
 };
 
 bool WallFinder::findWall(int dir) {
@@ -177,6 +188,23 @@ bool WallFinder::findWall(int dir) {
   return _found_left;
 };
 
+void WallFinder::turn() {
+  if (isState(WallFinderState::TURN_LEFT)) { // left turn
+    if (_ticks > 90) {
+      sparki.moveForward(1);
+    } else {
+      sparki.moveLeft(1);
+    }
+  } else { // right turn
+    sparki.moveRight(1);
+  }
+
+  // If we've completed the turn, return to move state
+  if (!_ticks) {
+    setState(WallFinderState::MOVE);
+  }
+};
+
 void WallFinder::checkFinish() {
   sparki.moveForward();
   if (_found_left || _found_right || _found_front) {
@@ -192,6 +220,12 @@ bool WallFinder::setState(WallFinderState state, bool reset) {
   switch (state) {
     case WallFinderState::CALIBRATE:
       _calibrated = false;
+      break;
+    case WallFinderState::TURN_LEFT:
+      _ticks = TURN_LEFT_MOVE + 90;
+      break;
+    case WallFinderState::TURN_RIGHT:
+      _ticks = 90;
       break;
     case WallFinderState::FINISH:
       if (!isState(WallFinderState::CHECK_FINISH)) {
