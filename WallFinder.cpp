@@ -70,17 +70,10 @@ void WallFinder::read() {
   _sensor_front = sparki.lineCenter();
   _found_front = checkSensor(_sensor_front);
 
-  if (_found_left && _found_front) {
+  _found_dead_end = _found_left && _found_front;
+  if (_found_dead_end) {
     _found_left = false;
-    _found_dead_end = true;
   }
-
-  /* // NOTE: Not necessary if following left wall
-  if (_found_right && _found_front) {
-    _found_right = false;
-    _found_dead_end = true;
-  }
-  */
 };
 
 void WallFinder::debug() {
@@ -146,13 +139,13 @@ void WallFinder::move() {
 
 void WallFinder::find() {
   // Search right then left
-  if (findWall(DIR_CW) || findWall(DIR_CCW)) {
+  if (!findWall(DIR_CW) && !findWall(DIR_CCW)) {
+    // If we can't find the wall, take a left turn
+    setState(WallFinderState::TURN_LEFT);
+  } else {
     // If we find the wall, go back to move state
     setState(WallFinderState::MOVE);
   }
-
-  // If we can't find the wall, take a left turn
-  setState(WallFinderState::TURN_LEFT);
 };
 
 bool WallFinder::findWall(int dir) {
