@@ -37,7 +37,7 @@ protected:
   bool checkSensor(int value);
   void read();
 
-  bool calibrate();
+  void calibrate();
   void move();
   void find();
   bool findWall(int dir = DIR_CW);
@@ -62,8 +62,5 @@ private:
   bool _found_front;
 
   bool _found_wall, _found_dead_end;
-
-  // Calibration
-  bool _calibrated;
 
 };

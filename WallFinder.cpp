@@ -19,9 +19,7 @@ void WallFinder::update() {
 
   switch (_state) {
     case WallFinderState::CALIBRATE:
-      if (calibrate()) {
-        setState(WallFinderState::MOVE);
-      }
+      calibrate();
       break;
 
     case WallFinderState::MOVE:
@@ -96,14 +94,9 @@ void WallFinder::debug() {
   sparki.print(" F: ");
   sparki.print(getBoolName(_found_front));
   sparki.print(" R: ");
-  sparki.println(getBoolName(_found_right));
-
-  sparki.print("D: ");
-  sparki.print(getBoolName(_found_dead_end));
-
-  // Calibration
-  sparki.print(" C: ");
-  sparki.println(getBoolName(_calibrated));
+  sparki.print(getBoolName(_found_right));
+  sparki.print(" D: ");
+  sparki.println(getBoolName(_found_dead_end));
 };
 
 const char *WallFinder::getStateName() {
@@ -130,15 +123,12 @@ const char *WallFinder::getBoolName(bool value) {
   return value ? "y" : "n";
 };
 
-bool WallFinder::calibrate() {
-  if (_calibrated) return false;
-
+void WallFinder::calibrate() {
   // Move a little and check if we've hit the left wall
   sparki.moveLeft(1);
-  read(); // NOTE: This read call may be unnecessary
-  _calibrated = _found_left;
-
-  return _calibrated;
+  if (_found_left) {
+    setState(WallFinderState::MOVE);
+  }
 };
 
 void WallFinder::move() {
@@ -218,9 +208,6 @@ bool WallFinder::setState(WallFinderState state, bool reset) {
   if (isState(state)) return false;
   
   switch (state) {
-    case WallFinderState::CALIBRATE:
-      _calibrated = false;
-      break;
     case WallFinderState::TURN_LEFT:
       _ticks = TURN_LEFT_MOVE + 90;
       break;
