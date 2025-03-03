@@ -85,6 +85,7 @@ void remote() {
 
     case 12: // 1
       wallFinder.reset();
+      paused = false;
       break;
 
     case 64: // square button
