@@ -22,7 +22,11 @@ void loop() {
   sparki.RGB(RGB_GREEN);
 
   wallFinder.update();
+
+  // Debugging
+  sparki.clearLCD();
   wallFinder.debug();
+  sparki.updateLCD();
 
   // Handle finish state
   if (wallFinder.isState(WallFinderState::FINISH)) {
@@ -81,6 +85,7 @@ void remote() {
 
     case 12: // 1
       wallFinder.reset();
+      paused = false;
       break;
 
     case 64: // square button
