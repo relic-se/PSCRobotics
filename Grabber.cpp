@@ -2,7 +2,7 @@
 #include "Grabber.hpp"
 
 Grabber::Grabber() {
-  sparki.gripperOpen();
+  sparki.gripperOpen(GRABBER_INITIAL_OPEN);
   sparki.servo(SERVO_CENTER);
   reset();
 };

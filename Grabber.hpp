@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <Sparki.h>
 
+#define GRABBER_INITIAL_OPEN (10) // cm
 #define GRABBER_DISTANCE (2) // cm
 #define GRABBER_DURATION (2000) // ms
 
