@@ -12,7 +12,7 @@ enum class GrabberState {
   GRAB,
   HOLD,
   RELEASE,
-  COMPLETE // Unless we restart back to search
+  COMPLETE
 };
 
 class Grabber
@@ -25,7 +25,8 @@ public:
   
   GrabberState getState();
   bool isState(GrabberState state);
-  
+
+  bool release();
   void reset();
 
 protected: 

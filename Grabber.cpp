@@ -11,6 +11,11 @@ void Grabber::reset() {
   setState(GrabberState::SEARCH);
 };
 
+bool Grabber::release() {
+  if (!isState(GrabberState::HOLD)) return false;
+  return setState(GrabberState::RELEASE);
+};
+
 void Grabber::update() {
   // Update timer
   unsigned long current = millis();
