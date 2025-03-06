@@ -25,7 +25,7 @@ void Grabber::update() {
   // Read ultrasonic sensor
   distance = sparki.ping();
 
-  switch (state) {
+  switch (_state) {
 
     case GrabberState::SEARCH:
       // NOTE: If ping is invalid, distance is -1
