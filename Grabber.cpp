@@ -12,9 +12,18 @@ void Grabber::reset() {
 };
 
 void Grabber::update() {
+  // Read ultrasonic sensor
   distance = sparki.ping();
-  if (distance < 2) {
-    setState(GrabberState::CLOSING);
+
+  switch (state) {
+
+    case GrabberState::SEARCH:
+      // NOTE: If ping is invalid, distance is -1
+      if (distance >= 0 && distance <= GRABBER_DISTANCE) {
+        setState(GrabberState::CLOSING);
+      }
+      break;
+
   }
 };
 
@@ -26,7 +35,8 @@ void Grabber::debug() {
 bool Grabber::setState(GrabberState state) {
   if (isState(state)) return false;
 
-  switch(state) {
+  switch (state) {
+
     case GrabberState::CLOSING:
       sparki.gripperClose();
       break;
@@ -38,6 +48,7 @@ bool Grabber::setState(GrabberState state) {
     default:
       sparki.gripperStop();
       break;
+
   }
   
   _state = state;

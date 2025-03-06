@@ -3,6 +3,8 @@
 #include <Arduino.h>
 #include <Sparki.h>
 
+#define GRABBER_DISTANCE (2) // cm
+
 enum class GrabberState {
   SEARCH,
   CLOSING,
