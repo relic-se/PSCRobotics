@@ -3,14 +3,12 @@
 #include <Arduino.h>
 #include <Sparki.h>
 
-
-
 enum class GrabberState {
-SEARCH, 
-CLOSING,
-HOLD,
-OPENING,
-COMPLETE //UNLESS WE RESTART BACK TO SEARCH
+  SEARCH,
+  CLOSING,
+  HOLD,
+  OPENING,
+  COMPLETE // Unless we restart back to search
 };
 
 class Grabber
@@ -21,16 +19,16 @@ public:
   void update();
   void debug();
   
-   GrabberState getState();
-  bool isState( GrabberState state);
+  GrabberState getState();
+  bool isState(GrabberState state);
   
   void reset();
+
 protected: 
-bool setState(GrabberState state);
+  bool setState(GrabberState state);
 
   
 private:
-GrabberState _state;
-int distance;
-
+  GrabberState _state;
+  int distance;
 };
