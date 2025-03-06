@@ -25,7 +25,19 @@ void Grabber::update() {
     case GrabberState::SEARCH:
       // NOTE: If ping is invalid, distance is -1
       if (distance >= 0 && distance <= GRABBER_DISTANCE) {
-        setState(GrabberState::CLOSING);
+        setState(GrabberState::GRAB);
+      }
+      break;
+
+    case GrabberState::GRAB:
+      if (_timer >= GRABBER_DURATION) {
+        setState(GrabberState::HOLD);
+      }
+      break;
+
+    case GrabberState::RELEASE:
+      if (_timer > GRABBER_DURATION) {
+        setState(GrabberState::COMPLETE);
       }
       break;
 
@@ -43,11 +55,11 @@ bool Grabber::setState(GrabberState state, bool reset) {
 
   switch (state) {
 
-    case GrabberState::CLOSING:
+    case GrabberState::GRAB:
       sparki.gripperClose();
       break;
   
-    case GrabberState::OPENING:
+    case GrabberState::RELEASE:
       sparki.gripperOpen();
       break;
 

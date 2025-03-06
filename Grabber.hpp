@@ -4,6 +4,7 @@
 #include <Sparki.h>
 
 #define GRABBER_DISTANCE (2) // cm
+#define GRABBER_DURATION (2000) // ms
 
 enum class GrabberState {
   SEARCH,
