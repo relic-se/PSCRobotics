@@ -26,7 +26,7 @@ public:
   GrabberState getState();
   bool isState(GrabberState state);
 
-  bool release();
+  bool release(bool blocking = false);
   void reset();
 
 protected: 

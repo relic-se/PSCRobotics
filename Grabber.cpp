@@ -11,9 +11,17 @@ void Grabber::reset() {
   setState(GrabberState::SEARCH);
 };
 
-bool Grabber::release() {
+bool Grabber::release(bool blocking) {
   if (!isState(GrabberState::HOLD)) return false;
-  return setState(GrabberState::RELEASE);
+  if (!setState(GrabberState::RELEASE)) return false;
+  if (!blocking) return true;
+
+  // Wait until we've finished letting go of the object
+  while (isState(GrabberState::RELEASE)) {
+    delay(1);
+    update();
+  }
+  return true;
 };
 
 void Grabber::update() {
