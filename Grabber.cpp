@@ -28,8 +28,9 @@ void Grabber::update() {
 };
 
 void Grabber::debug() {
+  sparki.print("Dist: ");
   sparki.print(distance);
-  sparki.println(" cm");
+  sparki.println("cm");
 };
 
 bool Grabber::setState(GrabberState state) {
