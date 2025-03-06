@@ -12,6 +12,11 @@ void Grabber::reset() {
 };
 
 void Grabber::update() {
+  // Update timer
+  unsigned long current = millis();
+  _timer += current - _millis;
+  _millis = current;
+
   // Read ultrasonic sensor
   distance = sparki.ping();
 
@@ -33,7 +38,7 @@ void Grabber::debug() {
   sparki.println("cm");
 };
 
-bool Grabber::setState(GrabberState state) {
+bool Grabber::setState(GrabberState state, bool reset) {
   if (isState(state)) return false;
 
   switch (state) {
@@ -53,6 +58,11 @@ bool Grabber::setState(GrabberState state) {
   }
   
   _state = state;
+  if (reset) {
+    _timer = 0;
+    _millis = millis();
+  }
+
   return true;
 };
 
