@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <Sparki.h>
+#include "Component.hpp"
 
 #define GRABBER_INITIAL_OPEN (10) // cm
 #define GRABBER_DISTANCE (2) // cm
@@ -15,25 +16,21 @@ enum class GrabberState {
   COMPLETE
 };
 
-class Grabber
+class Grabber : public Component<GrabberState>
 {
 public:
   Grabber();
   
-  void update();
-  void debug();
-  
-  GrabberState getState();
-  bool isState(GrabberState state);
-
   bool release(bool blocking = false);
-  void reset();
+  int getDistance();
+  
+  void debug() override;
 
-protected: 
-  bool setState(GrabberState state, bool reset = true);
+protected:
+  GrabberState changeState(GrabberState next, GrabberState previous);
+  void updateState(GrabberState state);
+  const char *getStateName(GrabberState state);
   
 private:
-  GrabberState _state;
-  unsigned long _timer, _millis;
-  int distance;
+  int _distance;
 };

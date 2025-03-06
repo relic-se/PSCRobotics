@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <Sparki.h>
+#include "Component.hpp"
 
 #define SENSOR_THRESHOLD (700)
 #define FIND_TURN_DEGREES (15) // How many degrees right and left we should check when finding the wall
@@ -18,21 +19,15 @@ enum class WallFinderState {
   FINISH
 };
 
-class WallFinder
+class WallFinder : public Component<WallFinderState>
 {
 public:
-  WallFinder();
-  
-  void update();
-  void debug();
-  
-  WallFinderState getState();
-  bool isState(WallFinderState state);
-  void reset();
-  
+  void debug() override;
+
 protected:
-  const char *getStateName();
-  const char *getBoolName(bool value);
+  WallFinderState changeState(WallFinderState next, WallFinderState previous);
+  void updateState(WallFinderState state);
+  const char *getStateName(WallFinderState state);
 
   bool checkSensor(int value);
   void read();
@@ -44,13 +39,7 @@ protected:
   void turn();
   void checkFinish();
 
-  bool setState(WallFinderState state, bool reset = true);
-
 private:
-  // State
-  WallFinderState _state;
-  unsigned long _millis, _timer, _ticks;
-
   // Sensors
   int _sensor_left_outer, _sensor_left_inner;
   bool _found_left;

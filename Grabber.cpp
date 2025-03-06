@@ -1,14 +1,9 @@
 
 #include "Grabber.hpp"
 
-Grabber::Grabber() {
+Grabber::Grabber() : Component() {
   sparki.gripperOpen(GRABBER_INITIAL_OPEN);
   sparki.servo(SERVO_CENTER);
-  reset();
-};
-
-void Grabber::reset() {
-  setState(GrabberState::SEARCH);
 };
 
 bool Grabber::release(bool blocking) {
@@ -24,32 +19,46 @@ bool Grabber::release(bool blocking) {
   return true;
 };
 
-void Grabber::update() {
-  // Update timer
-  unsigned long current = millis();
-  _timer += current - _millis;
-  _millis = current;
+int Grabber::getDistance() {
+  return _distance;
+};
 
+GrabberState Grabber::changeState(GrabberState current, GrabberState previous) {
+  switch (current) {
+    case GrabberState::GRAB:
+      sparki.gripperClose();
+      break;
+    case GrabberState::RELEASE:
+      sparki.gripperOpen();
+      break;
+    default:
+      sparki.gripperStop();
+      break;
+  }
+  return current;
+};
+
+void Grabber::updateState(GrabberState state) {
   // Read ultrasonic sensor
-  distance = sparki.ping();
+  _distance = sparki.ping();
 
-  switch (_state) {
+  switch (state) {
 
     case GrabberState::SEARCH:
       // NOTE: If ping is invalid, distance is -1
-      if (distance >= 0 && distance <= GRABBER_DISTANCE) {
+      if (_distance >= 0 && _distance <= GRABBER_DISTANCE) {
         setState(GrabberState::GRAB);
       }
       break;
 
     case GrabberState::GRAB:
-      if (_timer >= GRABBER_DURATION) {
+      if (getTimer() >= GRABBER_DURATION) {
         setState(GrabberState::HOLD);
       }
       break;
 
     case GrabberState::RELEASE:
-      if (_timer > GRABBER_DURATION) {
+      if (getTimer() > GRABBER_DURATION) {
         setState(GrabberState::COMPLETE);
       }
       break;
@@ -58,43 +67,27 @@ void Grabber::update() {
 };
 
 void Grabber::debug() {
+  Component::debug();
+
+  // Ping distance
   sparki.print("Dist: ");
-  sparki.print(distance);
+  sparki.print(_distance);
   sparki.println("cm");
 };
 
-bool Grabber::setState(GrabberState state, bool reset) {
-  if (isState(state)) return false;
-
+const char *Grabber::getStateName(GrabberState state) {
   switch (state) {
-
+    case GrabberState::SEARCH:
+      return "Searching";
     case GrabberState::GRAB:
-      sparki.gripperClose();
-      break;
-  
+      return "Grabbing";
+    case GrabberState::HOLD:
+      return "Holding";
     case GrabberState::RELEASE:
-      sparki.gripperOpen();
-      break;
-
+      return "Releasing";
+    case GrabberState::COMPLETE:
+      return "Completed";
     default:
-      sparki.gripperStop();
-      break;
-
+      return Component::getStateName(state);
   }
-  
-  _state = state;
-  if (reset) {
-    _timer = 0;
-    _millis = millis();
-  }
-
-  return true;
-};
-
-GrabberState Grabber::getState() {
-  return _state;
-};
-
-bool Grabber::isState(GrabberState state) {
-  return state == _state;
 };
