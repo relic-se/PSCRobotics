@@ -7,9 +7,9 @@
 
 enum class GrabberState {
   SEARCH,
-  CLOSING,
+  GRAB,
   HOLD,
-  OPENING,
+  RELEASE,
   COMPLETE // Unless we restart back to search
 };
 
