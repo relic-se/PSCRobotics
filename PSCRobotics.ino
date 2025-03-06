@@ -1,7 +1,9 @@
 #include <Sparki.h>
 #include "WallFinder.hpp"
+#include "Grabber.hpp"
 
 WallFinder wallFinder;
+Grabber grabber;
 
 bool paused = false;
 
@@ -21,11 +23,17 @@ void loop() {
   }
   sparki.RGB(RGB_GREEN);
 
-  wallFinder.update();
+  grabber.update();
+  if (grabber.isState(GrabberState::SEARCH) || grabber.isState(GrabberState::HOLD)) {
+    wallFinder.update();
+  } else {
+    sparki.moveStop();
+  }
 
   // Debugging
   sparki.clearLCD();
   wallFinder.debug();
+  grabber.debug();
   sparki.updateLCD();
 
   // Handle finish state
@@ -50,6 +58,9 @@ void finish() {
   // 360 spin
   sparki.moveRight(360);
   delay(2000);
+
+  // Let go of object
+  grabber.release(true);
 
   // Wait
   while (sparki.readIR() != 69) { // rotate left
@@ -85,11 +96,13 @@ void remote() {
 
     case 12: // 1
       wallFinder.reset();
+      grabber.reset();
       paused = false;
       break;
 
     case 64: // square button
       sparki.moveStop();
+      sparki.gripperStop();
       paused = !paused;
       break;
     
