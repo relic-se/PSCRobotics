@@ -25,11 +25,15 @@ void loop() {
   }
   sparki.RGB(RGB_GREEN);
 
-  grabber.update();
-  if (grabber.isState(GrabberState::SEARCH) || grabber.isState(GrabberState::HOLD)) {
+  if (false && wallFinder.isState(WallFinderState::CALIBRATE)) {
     wallFinder.update();
   } else {
-    sparki.moveStop();
+    grabber.update();
+    if (grabber.isState(GrabberState::SEARCH) || grabber.isState(GrabberState::HOLD)) {
+      wallFinder.update();
+    } else {
+      sparki.moveStop();
+    }
   }
 
   // Debugging
