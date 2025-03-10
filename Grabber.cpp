@@ -1,12 +1,38 @@
 
 #include "Grabber.hpp"
 
-Grabber::Grabber() : Component() { };
+Grabber::Grabber() : Component() {
+  _open = false;
+};
 
 void Grabber::setup() {
-  sparki.gripperOpen(GRABBER_INITIAL_OPEN);
   sparki.servo(SERVO_CENTER);
   Component::setup();
+};
+
+void Grabber::reset() {
+  open();
+  Component::reset();
+};
+
+void Grabber::open() {
+  if (_open) return;
+  sparki.gripperOpen(GRABBER_OPEN);
+  while (sparki.areMotorsRunning()) {
+    delay(100);
+  }
+  sparki.gripperStop();
+  _open = true;
+};
+
+void Grabber::close() {
+  if (!_open) return;
+  sparki.gripperClose(GRABBER_OPEN);
+  while (sparki.areMotorsRunning()) {
+    delay(100);
+  }
+  sparki.gripperStop();
+  _open = false;
 };
 
 bool Grabber::release(bool blocking) {
@@ -29,13 +55,11 @@ int Grabber::getDistance() {
 GrabberState Grabber::changeState(GrabberState current, GrabberState previous) {
   switch (current) {
     case GrabberState::GRAB:
-      sparki.gripperClose();
+      setTicks(_distance);
       break;
     case GrabberState::RELEASE:
-      sparki.gripperOpen();
-      break;
-    default:
-      sparki.gripperStop();
+      open();
+      setState(GrabberState::COMPLETE);
       break;
   }
   return current;
@@ -43,7 +67,9 @@ GrabberState Grabber::changeState(GrabberState current, GrabberState previous) {
 
 void Grabber::updateState(GrabberState state) {
   // Read ultrasonic sensor
-  _distance = sparki.ping();
+  if (isState(GrabberState::SEARCH)) {
+    _distance = sparki.ping();
+  }
 
   switch (state) {
 
@@ -55,15 +81,16 @@ void Grabber::updateState(GrabberState state) {
       break;
 
     case GrabberState::GRAB:
-      if (getTimer() >= GRABBER_DURATION) {
+      if (!noTicks()) {
+        sparki.moveForward(1);
+      } else {
+        close();
         setState(GrabberState::HOLD);
       }
       break;
 
     case GrabberState::RELEASE:
-      if (getTimer() > GRABBER_DURATION) {
-        setState(GrabberState::COMPLETE);
-      }
+      // doesn't run
       break;
 
   }

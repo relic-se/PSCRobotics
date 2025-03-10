@@ -43,7 +43,7 @@ public:
     return _state == state;
   };
 
-  void reset() {
+  virtual void reset() {
     setState((T)0);
   };
 
