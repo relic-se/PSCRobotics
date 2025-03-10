@@ -10,6 +10,8 @@ bool paused = false;
 void setup() {
   // Startup beep
   sparki.beep(440, 300); // A4, 0.3s
+  wallFinder.setup();
+  grabber.setup();
   delay(300);
   sparki.beep(880, 500); // A5, 0.5s
 }
@@ -69,6 +71,7 @@ void finish() {
   }
 
   // Reset
+  grabber.reset();
   wallFinder.reset();
 }
 

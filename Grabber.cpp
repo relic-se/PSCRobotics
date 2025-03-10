@@ -1,9 +1,12 @@
 
 #include "Grabber.hpp"
 
-Grabber::Grabber() : Component() {
+Grabber::Grabber() : Component() { };
+
+void Grabber::setup() {
   sparki.gripperOpen(GRABBER_INITIAL_OPEN);
   sparki.servo(SERVO_CENTER);
+  Component::setup();
 };
 
 bool Grabber::release(bool blocking) {

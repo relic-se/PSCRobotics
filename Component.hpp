@@ -6,7 +6,9 @@ template <typename T>
 class Component
 {
 public:
-  Component() {
+  Component() { };
+
+  virtual void setup() {
     reset();
   };
   
@@ -93,5 +95,5 @@ protected:
   
 private:
   T _state;
-  unsigned long _timer, _millis, _ticks;
+  unsigned int _timer, _millis, _ticks;
 };

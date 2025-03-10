@@ -1,5 +1,11 @@
 #include "WallFinder.hpp"
 
+WallFinder::WallFinder() : Component() { };
+
+void WallFinder::setup() {
+  Component::setup();
+};
+
 WallFinderState WallFinder::changeState(WallFinderState current, WallFinderState previous) {
   switch (current) {
     case WallFinderState::TURN_LEFT:

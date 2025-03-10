@@ -9,7 +9,7 @@
 #define FINISH_TIME (2000) // Length of time to continue checking for finish in ms
 #define TURN_LEFT_MOVE (7) // How far we should go forward before turning left
 
-enum class WallFinderState {
+enum class WallFinderState : uint8_t {
   CALIBRATE,
   MOVE,
   FIND,
@@ -22,6 +22,8 @@ enum class WallFinderState {
 class WallFinder : public Component<WallFinderState>
 {
 public:
+  WallFinder();
+  void setup() override;
   void debug() override;
 
 protected:
