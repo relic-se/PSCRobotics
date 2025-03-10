@@ -1,23 +1,37 @@
 #include "WallFinder.hpp"
 
-WallFinder::WallFinder() {
-  reset();
+WallFinder::WallFinder() : Component() { };
+
+void WallFinder::setup() {
+  Component::setup();
 };
 
-void WallFinder::reset() {
-  setState(WallFinderState::CALIBRATE);
+WallFinderState WallFinder::changeState(WallFinderState current, WallFinderState previous) {
+  switch (current) {
+    case WallFinderState::TURN_LEFT:
+      setTicks(TURN_LEFT_MOVE + 90);
+      break;
+    case WallFinderState::TURN_RIGHT:
+      setTicks(90);
+      break;
+    case WallFinderState::FINISH:
+      if (!isState(WallFinderState::CHECK_FINISH)) {
+        return WallFinderState::CHECK_FINISH;
+      } else if (getTimer() < FINISH_TIME) {
+        return previous;
+      }
+      break;
+  }
+  
+  return current;
 };
 
-void WallFinder::update() {
-  // Update timer
-  unsigned long current = millis();
-  _timer += current - _millis;
-  _millis = current;
-
+void WallFinder::updateState(WallFinderState state) {
   // Evaluate sensors
   read();
 
-  switch (_state) {
+  switch (state) {
+
     case WallFinderState::CALIBRATE:
       calibrate();
       break;
@@ -38,20 +52,8 @@ void WallFinder::update() {
     case WallFinderState::CHECK_FINISH:
       checkFinish();
       break;
+
   }
-
-  // Update ticks
-  if (_ticks > 0) {
-    _ticks--;
-  }
-};
-
-WallFinderState WallFinder::getState() {
-  return _state;
-};
-
-bool WallFinder::isState(WallFinderState state) {
-  return state == _state;
 };
 
 bool WallFinder::checkSensor(int value) {
@@ -76,46 +78,6 @@ void WallFinder::read() {
   }
 };
 
-void WallFinder::debug() {
-  // State
-  sparki.print("State: ");
-  sparki.println(getStateName());
-
-  // Sensors
-  sparki.print("L: ");
-  sparki.print(getBoolName(_found_left));
-  sparki.print(" F: ");
-  sparki.print(getBoolName(_found_front));
-  sparki.print(" R: ");
-  sparki.print(getBoolName(_found_right));
-  sparki.print(" D: ");
-  sparki.println(getBoolName(_found_dead_end));
-};
-
-const char *WallFinder::getStateName() {
-  switch (_state) {
-    case WallFinderState::CALIBRATE:
-      return "Calibrate";
-    case WallFinderState::MOVE:
-      return "Move";
-    case WallFinderState::FIND:
-      return "Find Wall";
-    case WallFinderState::TURN_LEFT:
-      return "Turning Left";
-    case WallFinderState::TURN_RIGHT:
-      return "Turning Right";
-    case WallFinderState::CHECK_FINISH:
-      return "Checking Finish";
-    case WallFinderState::FINISH:
-      return "Finish";
-  }
-  return "unknown";
-};
-
-const char *WallFinder::getBoolName(bool value) {
-  return value ? "y" : "n";
-};
-
 void WallFinder::calibrate() {
   // Move a little and check if we've hit the left wall
   sparki.moveLeft(1);
@@ -129,8 +91,8 @@ void WallFinder::move() {
   if (_found_dead_end) {
     // Right turn
     setState(WallFinderState::TURN_RIGHT);
-  //} else if (!_found_left && !_found_right && !_found_front) { // All sensors off, finished
-  //  setState(WallFinderState::CHECK_FINISH);
+  } else if (!_found_left && !_found_right && !_found_front) { // All sensors off, finished
+    setState(WallFinderState::CHECK_FINISH);
   } else if (!_found_left) { // Off of wall
     setState(WallFinderState::FIND);
     sparki.moveForward(0.5);
@@ -173,7 +135,7 @@ bool WallFinder::findWall(int dir) {
 
 void WallFinder::turn() {
   if (isState(WallFinderState::TURN_LEFT)) { // left turn
-    if (_ticks > 90) {
+    if (getTicks() > 90) {
       sparki.moveForward(1);
     } else {
       sparki.moveLeft(1);
@@ -183,7 +145,7 @@ void WallFinder::turn() {
   }
 
   // If we've completed the turn, return to move state
-  if (!_ticks) {
+  if (noTicks()) {
     setState(WallFinderState::MOVE);
   }
 };
@@ -192,36 +154,42 @@ void WallFinder::checkFinish() {
   sparki.moveForward();
   if (_found_left || _found_right || _found_front) {
     setState(WallFinderState::MOVE);
-  } else if (_timer >= FINISH_TIME) {
+  } else if (getTimer() >= FINISH_TIME) {
     setState(WallFinderState::FINISH);
   }
 };
 
-bool WallFinder::setState(WallFinderState state, bool reset) {
-  if (isState(state)) return false;
-  
+void WallFinder::debug() {
+  Component::debug();
+
+  // Sensors
+  sparki.print("L: ");
+  sparki.print(getBoolName(_found_left));
+  sparki.print(" F: ");
+  sparki.print(getBoolName(_found_front));
+  sparki.print(" R: ");
+  sparki.print(getBoolName(_found_right));
+  sparki.print(" D: ");
+  sparki.println(getBoolName(_found_dead_end));
+};
+
+const char *WallFinder::getStateName(WallFinderState state) {
   switch (state) {
+    case WallFinderState::CALIBRATE:
+      return "Calibrate";
+    case WallFinderState::MOVE:
+      return "Move";
+    case WallFinderState::FIND:
+      return "Find Wall";
     case WallFinderState::TURN_LEFT:
-      _ticks = TURN_LEFT_MOVE + 90;
-      break;
+      return "Turning Left";
     case WallFinderState::TURN_RIGHT:
-      _ticks = 90;
-      break;
+      return "Turning Right";
+    case WallFinderState::CHECK_FINISH:
+      return "Checking Finish";
     case WallFinderState::FINISH:
-      if (!isState(WallFinderState::CHECK_FINISH)) {
-        state = WallFinderState::CHECK_FINISH;
-      } else if (_timer < FINISH_TIME) {
-        return false;
-      }
-      break;
+      return "Finish";
+    default:
+      return Component::getStateName(state);
   }
-
-  _state = state;
-  if (reset) {
-    sparki.moveStop();
-    _timer = 0;
-    _millis = millis();
-  }
-
-  return true;
 };
