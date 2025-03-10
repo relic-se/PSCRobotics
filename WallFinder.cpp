@@ -91,8 +91,8 @@ void WallFinder::move() {
   if (_found_dead_end) {
     // Right turn
     setState(WallFinderState::TURN_RIGHT);
-  //} else if (!_found_left && !_found_right && !_found_front) { // All sensors off, finished
-  //  setState(WallFinderState::CHECK_FINISH);
+  } else if (!_found_left && !_found_right && !_found_front) { // All sensors off, finished
+    setState(WallFinderState::CHECK_FINISH);
   } else if (!_found_left) { // Off of wall
     setState(WallFinderState::FIND);
     sparki.moveForward(0.5);
