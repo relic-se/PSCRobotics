@@ -96,16 +96,32 @@ void remote() {
 
   switch (code) {
 
-    case 12: // 1
+    // Reset
+    case 69: // rotate left
       wallFinder.reset();
       grabber.reset();
       paused = false;
       break;
 
+    // Pause
     case 64: // square button
       sparki.moveStop();
       sparki.gripperStop();
       paused = !paused;
+      break;
+
+    // Finish
+    case 67: // rotate right
+      if (grabber.isState(GrabberState::HOLD) && !wallFinder.isState(WallFinderState::CALIBRATE)) {
+        finish();
+      } else {
+        // Error beep
+        sparki.RGB(RGB_RED);
+        sparki.beep(220, 300); // A3, 0.3s
+        delay(300);
+        sparki.beep(110, 500); // A2, 0.5s
+        // NOTE: RGB is reset in loop
+      }
       break;
     
   }
