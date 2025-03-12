@@ -8,10 +8,14 @@ Grabber grabber;
 bool paused = false;
 
 void setup() {
-  // Startup beep
-  sparki.beep(440, 300); // A4, 0.3s
+  // Initiate objects
+  sparki.RGB(RGB_YELLOW);
+  sparki.beep(220, 300); // A3, 0.3s
   wallFinder.setup();
   grabber.setup();
+  
+  // Startup beep
+  sparki.beep(440, 300); // A4, 0.3s
   delay(300);
   sparki.beep(880, 500); // A5, 0.5s
 }
@@ -41,11 +45,6 @@ void loop() {
   wallFinder.debug();
   grabber.debug();
   sparki.updateLCD();
-
-  // Handle finish state
-  if (wallFinder.isState(WallFinderState::FINISH)) {
-    finish();
-  }
 }
 
 void finish() {
@@ -101,16 +100,32 @@ void remote() {
 
   switch (code) {
 
-    case 12: // 1
+    // Reset
+    case 69: // rotate left
       wallFinder.reset();
       grabber.reset();
       paused = false;
       break;
 
+    // Pause
     case 64: // square button
       sparki.moveStop();
       sparki.gripperStop();
       paused = !paused;
+      break;
+
+    // Finish
+    case 71: // rotate right
+      if (grabber.isState(GrabberState::HOLD) && !wallFinder.isState(WallFinderState::CALIBRATE)) {
+        finish();
+      } else {
+        // Error beep
+        sparki.RGB(RGB_ORANGE);
+        sparki.beep(220, 300); // A3, 0.3s
+        delay(300);
+        sparki.beep(110, 500); // A2, 0.5s
+        // NOTE: RGB is reset in loop
+      }
       break;
     
   }

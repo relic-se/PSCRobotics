@@ -4,7 +4,8 @@
 #include <Sparki.h>
 #include "Component.hpp"
 
-#define GRABBER_OPEN (10) // cm
+#define GRABBER_INITIAL_OPEN (10) // cm
+#define GRABBER_OPEN (5) // cm
 #define GRABBER_DISTANCE (5) // cm
 
 enum class GrabberState : uint8_t {
@@ -28,7 +29,7 @@ public:
   void debug() override;
 
 protected:
-  void open();
+  void open(bool reset = false);
   void close();
   
   GrabberState changeState(GrabberState next, GrabberState previous);

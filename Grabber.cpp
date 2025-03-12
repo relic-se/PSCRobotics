@@ -11,13 +11,13 @@ void Grabber::setup() {
 };
 
 void Grabber::reset() {
-  open();
+  open(true);
   Component::reset();
 };
 
-void Grabber::open() {
+void Grabber::open(bool reset) {
   if (_open) return;
-  sparki.gripperOpen(GRABBER_OPEN);
+  sparki.gripperOpen(reset ? GRABBER_INITIAL_OPEN : GRABBER_OPEN);
   while (sparki.areMotorsRunning()) {
     delay(100);
   }
