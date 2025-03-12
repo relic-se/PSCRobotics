@@ -8,10 +8,14 @@ Grabber grabber;
 bool paused = false;
 
 void setup() {
-  // Startup beep
-  sparki.beep(440, 300); // A4, 0.3s
+  // Initiate objects
+  sparki.RGB(RGB_YELLOW);
+  sparki.beep(220, 300); // A3, 0.3s
   wallFinder.setup();
   grabber.setup();
+  
+  // Startup beep
+  sparki.beep(440, 300); // A4, 0.3s
   delay(300);
   sparki.beep(880, 500); // A5, 0.5s
 }
@@ -116,7 +120,7 @@ void remote() {
         finish();
       } else {
         // Error beep
-        sparki.RGB(RGB_RED);
+        sparki.RGB(RGB_ORANGE);
         sparki.beep(220, 300); // A3, 0.3s
         delay(300);
         sparki.beep(110, 500); // A2, 0.5s
