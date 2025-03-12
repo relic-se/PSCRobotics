@@ -5,7 +5,7 @@
 #include "Component.hpp"
 
 #define SENSOR_THRESHOLD (700)
-#define FIND_TURN_DEGREES (15) // How many degrees right and left we should check when finding the wall
+#define FIND_TURN_DEGREES (30) // How many degrees right and left we should check when finding the wall
 #define FINISH_TIME (2000) // Length of time to continue checking for finish in ms
 #define TURN_LEFT_MOVE (7) // How far we should go forward before turning left
 
