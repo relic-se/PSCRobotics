@@ -6,7 +6,6 @@
 
 #define SENSOR_THRESHOLD (700)
 #define FIND_TURN_DEGREES (30) // How many degrees right and left we should check when finding the wall
-#define FINISH_TIME (2000) // Length of time to continue checking for finish in ms
 #define TURN_LEFT_MOVE (7) // How far we should go forward before turning left
 
 enum class WallFinderState : uint8_t {
@@ -14,9 +13,7 @@ enum class WallFinderState : uint8_t {
   MOVE,
   FIND,
   TURN_LEFT,
-  TURN_RIGHT,
-  CHECK_FINISH,
-  FINISH
+  TURN_RIGHT
 };
 
 class WallFinder : public Component<WallFinderState>
@@ -39,7 +36,6 @@ protected:
   void find();
   bool findWall(int dir = DIR_CW);
   void turn();
-  void checkFinish();
 
 private:
   // Sensors

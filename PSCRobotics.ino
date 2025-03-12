@@ -41,11 +41,6 @@ void loop() {
   wallFinder.debug();
   grabber.debug();
   sparki.updateLCD();
-
-  // Handle finish state
-  if (wallFinder.isState(WallFinderState::FINISH)) {
-    finish();
-  }
 }
 
 void finish() {

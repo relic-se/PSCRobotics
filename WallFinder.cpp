@@ -14,13 +14,6 @@ WallFinderState WallFinder::changeState(WallFinderState current, WallFinderState
     case WallFinderState::TURN_RIGHT:
       setTicks(90);
       break;
-    case WallFinderState::FINISH:
-      if (!isState(WallFinderState::CHECK_FINISH)) {
-        return WallFinderState::CHECK_FINISH;
-      } else if (getTimer() < FINISH_TIME) {
-        return previous;
-      }
-      break;
   }
   
   return current;
@@ -47,10 +40,6 @@ void WallFinder::updateState(WallFinderState state) {
     case WallFinderState::TURN_LEFT:
     case WallFinderState::TURN_RIGHT:
       turn();
-      break;
-
-    case WallFinderState::CHECK_FINISH:
-      checkFinish();
       break;
 
   }
@@ -91,8 +80,6 @@ void WallFinder::move() {
   if (_found_dead_end) {
     // Right turn
     setState(WallFinderState::TURN_RIGHT);
-  } else if (!_found_left && !_found_right && !_found_front) { // All sensors off, finished
-    setState(WallFinderState::CHECK_FINISH);
   } else if (!_found_left) { // Off of wall
     setState(WallFinderState::FIND);
     sparki.moveForward(0.5);
@@ -150,15 +137,6 @@ void WallFinder::turn() {
   }
 };
 
-void WallFinder::checkFinish() {
-  sparki.moveForward();
-  if (_found_left || _found_right || _found_front) {
-    setState(WallFinderState::MOVE);
-  } else if (getTimer() >= FINISH_TIME) {
-    setState(WallFinderState::FINISH);
-  }
-};
-
 void WallFinder::debug() {
   Component::debug();
 
@@ -185,10 +163,6 @@ const char *WallFinder::getStateName(WallFinderState state) {
       return "Turning Left";
     case WallFinderState::TURN_RIGHT:
       return "Turning Right";
-    case WallFinderState::CHECK_FINISH:
-      return "Checking Finish";
-    case WallFinderState::FINISH:
-      return "Finish";
     default:
       return Component::getStateName(state);
   }
