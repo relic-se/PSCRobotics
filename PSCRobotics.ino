@@ -115,7 +115,7 @@ void remote() {
       break;
 
     // Finish
-    case 67: // rotate right
+    case 71: // rotate right
       if (grabber.isState(GrabberState::HOLD) && !wallFinder.isState(WallFinderState::CALIBRATE)) {
         finish();
       } else {
